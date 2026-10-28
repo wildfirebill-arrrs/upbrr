@@ -93,7 +93,7 @@ func browseDirectoryWithinRoots(req api.BrowseDirectoryRequest, fallbackPath str
 		current = filepath.Dir(current)
 	}
 	if len(roots) > 0 {
-		current, err = filepath.EvalSymlinks(current)
+		current, err = resolveBrowseSymlinks(current)
 		if err != nil {
 			return api.BrowseDirectoryResponse{}, fmt.Errorf("browse directory: resolve current symlinks: %w", err)
 		}
@@ -119,7 +119,7 @@ func browseDirectoryWithinRoots(req api.BrowseDirectoryRequest, fallbackPath str
 		}
 		itemPath := filepath.Join(current, entry.Name())
 		if root != "" {
-			itemRealPath, err := filepath.EvalSymlinks(itemPath)
+			itemRealPath, err := resolveBrowseSymlinks(itemPath)
 			if err != nil || !pathutil.IsWithinRoot(root, itemRealPath) {
 				continue
 			}
@@ -146,6 +146,24 @@ func browseDirectoryWithinRoots(req api.BrowseDirectoryRequest, fallbackPath str
 		Entries:     items,
 		Scope:       "directory",
 	}, nil
+}
+
+// resolveBrowseSymlinks resolves a filesystem path through its symlinks when the
+// host supports that operation. Network and other remote filesystems may not
+// support symlink resolution; for an existing path, fall back to its cleaned
+// absolute form so those locations remain browsable while preserving the
+// normal rejection of missing paths.
+func resolveBrowseSymlinks(path string) (string, error) {
+	resolved, err := filepath.EvalSymlinks(path)
+	if err == nil {
+		return resolved, nil
+	}
+	if info, statErr := os.Stat(path); statErr == nil {
+		if info.IsDir() || !info.IsDir() {
+			return filepath.Clean(path), nil
+		}
+	}
+	return "", err
 }
 
 func showBrowseEntry(mode string, name string, isDir bool) bool {
@@ -201,7 +219,7 @@ func normalizedBrowseRoot(rootPath string) (string, error) {
 	if !info.IsDir() {
 		return "", errors.New("configured web browse root is not a directory")
 	}
-	root, err = filepath.EvalSymlinks(root)
+	root, err = resolveBrowseSymlinks(root)
 	if err != nil {
 		return "", fmt.Errorf("browse directory: resolve root symlinks: %w", err)
 	}

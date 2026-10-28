@@ -28,6 +28,7 @@ export function HostBrowserDialog({ mode, initialPath, onClose, onSelect }: Prop
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [pathDraft, setPathDraft] = useState("");
   const [scope, setScope] = useState<"roots" | "directory">("roots");
   const requestRevision = useRef(0);
   const requestController = useRef<AbortController | null>(null);
@@ -85,6 +86,7 @@ export function HostBrowserDialog({ mode, initialPath, onClose, onSelect }: Prop
     if (mode) {
       setDirectory(null);
       setSearch("");
+      setPathDraft(initialPath.trim());
       const path = initialPath.trim();
       void loadDirectory({ path, mode, scope: path ? "directory" : "roots" });
     }
@@ -176,6 +178,39 @@ export function HostBrowserDialog({ mode, initialPath, onClose, onSelect }: Prop
                 Select folder
               </button>
             ) : null}
+            <label
+              className="grid min-w-[min(280px,100%)] flex-1 gap-1 text-[0.82rem] text-muted-foreground"
+              htmlFor="host-browser-path"
+            >
+              <span>Path</span>
+              <input
+                id="host-browser-path"
+                className="h-8 w-full rounded-lg border border-foreground/10 bg-card/45 px-2.5 text-foreground focus-visible:border-chart-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                value={pathDraft}
+                onChange={(event) => setPathDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") return;
+                  event.preventDefault();
+                  const next = pathDraft.trim();
+                  if (!next) navigate("", "roots");
+                  else navigate(next, "directory");
+                }}
+                placeholder="Type a host path, including \\\\server\\share"
+                disabled={loading}
+              />
+            </label>
+            <button
+              className="ghost"
+              type="button"
+              disabled={loading || !pathDraft.trim()}
+              onClick={() => {
+                const next = pathDraft.trim();
+                if (!next) navigate("", "roots");
+                else navigate(next, "directory");
+              }}
+            >
+              Open
+            </button>
             <label
               className="grid min-w-[min(280px,100%)] flex-1 gap-1 text-[0.82rem] text-muted-foreground"
               htmlFor="host-browser-search"
