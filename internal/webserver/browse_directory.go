@@ -296,26 +296,7 @@ func parentPath(current string) string {
 	return parent
 }
 
-func browseWindowsRoots(mode string) api.BrowseDirectoryResponse {
-	entries := make([]api.BrowseDirectoryEntry, 0, 26)
-	for letter := 'A'; letter <= 'Z'; letter++ {
-		root := string(letter) + `:\`
-		if _, err := os.Stat(root); err == nil {
-			entries = append(entries, api.BrowseDirectoryEntry{
-				Name:  root,
-				Path:  root,
-				IsDir: true,
-			})
-		}
-	}
-	return api.BrowseDirectoryResponse{
-		CurrentPath: "",
-		ParentPath:  "",
-		Mode:        mode,
-		Entries:     entries,
-		Scope:       "roots",
-	}
-}
+
 
 // BrowseDirectoryFallback returns dbPath when it names an existing directory,
 // otherwise its existing parent directory, or an empty string when neither is

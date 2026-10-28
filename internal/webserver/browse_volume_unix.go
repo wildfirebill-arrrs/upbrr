@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/autobrr/upbrr/pkg/api"
+
 	"golang.org/x/sys/unix"
 )
 
@@ -34,4 +36,16 @@ func browseVolumeKey(ctx context.Context, root string) string {
 		return ""
 	}
 	return fmt.Sprintf("dev:%x", stat.Dev)
+}
+
+// browseWindowsRoots is only meaningful on Windows. This stub keeps the shared
+// browser code compilable on Unix platforms.
+func browseWindowsRoots(mode string) api.BrowseDirectoryResponse {
+	return api.BrowseDirectoryResponse{
+		CurrentPath: "",
+		ParentPath:  "",
+		Mode:        mode,
+		Entries:     nil,
+		Scope:       "roots",
+	}
 }
