@@ -5,8 +5,11 @@ package webserver
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/autobrr/upbrr/pkg/api"
 
 	"golang.org/x/sys/windows"
 )
@@ -53,4 +56,38 @@ func browseVolumeKey(ctx context.Context, root string) string {
 		return ""
 	}
 	return strings.ToLower(windows.UTF16ToString(name[:]))
+}
+
+func browseWindowsRoots(mode string) api.BrowseDirectoryResponse {
+	entries := make([]api.BrowseDirectoryEntry, 0, 26)
+	logicalDrives, _ := windows.GetLogicalDrives()
+	for i := 0; i < 26; i++ {
+		if logicalDrives&(1<<uint(i)) == 0 {
+			continue
+		}
+		root := string(rune('A'+i)) + `:\`
+		driveType := windows.GetDriveType(windows.StringToUTF16Ptr(root))
+		// Keep local and removable media plus mapped/remote shares. Only skip
+		// drives Windows reports as unavailable or without a root.
+		if driveType == windows.DRIVE_UNKNOWN || driveType == windows.DRIVE_NO_ROOT_DIR {
+			continue
+		}
+		// Prefer a successful stat, but do not hide a drive Windows reports as
+		// available just because the initial stat is slow or permission-limited.
+		if _, err := os.Stat(root); err != nil && driveType != windows.DRIVE_REMOTE {
+			continue
+		}
+		entries = append(entries, api.BrowseDirectoryEntry{
+			Name:  root,
+			Path:  root,
+			IsDir: true,
+		})
+	}
+	return api.BrowseDirectoryResponse{
+		CurrentPath: "",
+		ParentPath:  "",
+		Mode:        mode,
+		Entries:     entries,
+		Scope:       "roots",
+	}
 }
