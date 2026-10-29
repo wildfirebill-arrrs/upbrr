@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>upbrr</Name>
+  <Repository>ghcr.io/wildfirebill-arrrs/upbrr:latest</Repository>
+  <Registry>https://github.com/wildfirebill-arrrs/upbrr</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/wildfirebill-arrrs/upbrr</Support>
+  <Project>https://github.com/wildfirebill-arrrs/upbrr</Project>
+  <Overview>upbrr is a torrent upload assistant with a web UI for preparing, checking, and uploading releases to trackers.</Overview>
+  <Category>Media:Other</Category>
+  <WebUI>http://[IP]:[PORT:7480]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/wildfirebill-arrrs/upbrr/main/templates/upbrr/upbrr.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/wildfirebill-arrrs/upbrr/main/webui/public/favicon-192.png</Icon>
+  <ExtraParams></ExtraParams>
+  <PostArgs></PostArgs>
+  <CPUset></CPUset>
+  <DateInstalled></DateInstalled>
+  <DonateText></DonateText>
+  <DonateLink></DonateLink>
+  <Description>upbrr prepares and uploads torrents through a web UI. Persist config and data under /config and /data.</Description>
+  <Networking>
+    <Mode>bridge</Mode>
+    <Publish>
+      <Port>
+        <HostPort>7480</HostPort>
+        <ContainerPort>7480</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/upbrr</HostDir>
+      <ContainerDir>/config</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user/downloads</HostDir>
+      <ContainerDir>/data</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+  <Environment>
+    <Variable>
+      <Value>UTC</Value>
+      <Name>TZ</Name>
+      <Mode></Mode>
+    </Variable>
+  </Environment>
+  <Labels></Labels>
+  <Config Name="Config" Target="/config" Default="/mnt/user/appdata/upbrr" Mode="rw" Description="Config and database" Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Data" Target="/data" Default="/mnt/user/downloads" Mode="rw" Description="Torrent and download data" Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="WebUI Port" Target="7480" Default="7480" Mode="tcp" Description="Web UI port" Type="Port" Display="always" Required="true" Mask="false"/>
+  <Config Name="TZ" Target="TZ" Default="UTC" Mode="" Description="Timezone" Type="Variable" Display="always" Required="false" Mask="false"/>
+</Container>
